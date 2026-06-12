@@ -1,0 +1,14 @@
+.venv/
+tessdata/
+hasil_ocr/
+*.pdf
+*.txt
+!requirements.txt
+*.html
+*.json
+__pycache__/
+.DS_Store
+.idea/
+.vscode/
+*.tmp
+.~lock.*
