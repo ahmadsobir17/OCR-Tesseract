@@ -1,7 +1,7 @@
 import os
 # Limit Tesseract (OpenMP) to use a maximum of 4 threads/cores
-os.environ["OMP_THREAD_LIMIT"] = "4"
-os.environ["OMP_NUM_THREADS"] = "4"
+os.environ["OMP_THREAD_LIMIT"] = "2"
+os.environ["OMP_NUM_THREADS"] = "2"
 
 import sys
 import json
@@ -71,7 +71,7 @@ def main():
     # Construct dynamic output filenames
     base_name = os.path.splitext(os.path.basename(pdf_to_use))[0]
     output_html_path = os.path.join(OUTPUT_DIR, f"{base_name}_OCR.html")
-    output_pdf_path = os.path.join(OUTPUT_DIR, f"{base_name}_OCR.pdf")
+    output_pdf_path = os.path.join(OUTPUT_DIR, f"{base_name}.pdf")
     progress_path = os.path.join(OUTPUT_DIR, f"{base_name}_progress.json")
 
     print(f"Using PDF file: {pdf_to_use} ({size_mb:.1f} MB)")

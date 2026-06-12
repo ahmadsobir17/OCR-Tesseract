@@ -1,0 +1,552 @@
+{
+  "name": "Mutqin AI",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Form Upload Document PDF",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "PDF",
+              "fieldType": "file",
+              "multipleFiles": false,
+              "acceptFileTypes": ".pdf",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Type",
+              "fieldType": "dropdown",
+              "defaultValue": "Tipe Dokumen",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Slide"
+                  },
+                  {
+                    "option": "Kitab"
+                  },
+                  {
+                    "option": "Artikel"
+                  }
+                ]
+              },
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -608,
+        848
+      ],
+      "id": "97068422-b9f4-46dd-adfd-7777c9d4c802",
+      "name": "Unggah PDF Pengetahuan",
+      "webhookId": "20ead644-770c-4b5a-836a-2ccb19600b80"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.body.sessionId }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        368,
+        1472
+      ],
+      "id": "a0c63a0e-be3d-426f-b284-af7cb722595c",
+      "name": "Memori Percakapan"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.rerankerCohere",
+      "typeVersion": 1,
+      "position": [
+        -608,
+        1584
+      ],
+      "id": "ff39b898-0226-4cce-8cfe-a863be7ffcdd",
+      "name": "Tool: Peningkat Akurasi Jawaban",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7c997e00-8dc6-485f-bcd4-99aa6d593458",
+              "name": "body.message",
+              "value": "={{ $json.body.message }}",
+              "type": "string"
+            },
+            {
+              "id": "5fe7d562-8c9d-48f9-99dd-43d26288c520",
+              "name": "body.sessionId",
+              "value": "={{ $json.body.sessionId }}",
+              "type": "string"
+            },
+            {
+              "id": "cc3194cd-41c1-4acc-afd5-03c8e080998a",
+              "name": "body.metadata.name",
+              "value": "={{ $json.body.metadata.name }}",
+              "type": "string"
+            },
+            {
+              "id": "8931a01e-b37e-41f9-bc9f-88abbebbd16d",
+              "name": "body.metadata.email",
+              "value": "={{ $json.body.metadata.email }}",
+              "type": "string"
+            },
+            {
+              "id": "ebeedafe-ae5b-4880-bb35-4dc3c4593808",
+              "name": "body.metadata.phone",
+              "value": "={{ $json.body.metadata.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "c8df2351-c970-4cd7-8d21-fba422b6c6f3",
+              "name": "body.metadata.source",
+              "value": "={{ $json.body.metadata.source }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -256,
+        1248
+      ],
+      "id": "7a87629c-ce4e-4343-965f-068b13e64292",
+      "name": "Normalize Chat"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Message : {{ $json.body.message }}\nName : {{ $json.body.metadata.name }}",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "=Kamu adalah **Mutqin** — bukan sekadar asisten, tapi teman ngobrol soal Islam yang asik, hangat, dan bisa diajak diskusi serius maupun santai.\n\nKamu bukan ulama, tapi kamu belajar bersama dari kitab-kitab para ulama. Setiap kali menjawab soal agama, kamu selalu mengecek rujukan dulu — bukan karena aturan, tapi karena kamu tahu betapa pentingnya tidak asal bicara soal ilmu agama.\n\n---\n\n## CARA KAMU BERINTERAKSI\n\nKalau user bilang \"halo\" atau tanya hal umum → respons santai, hangat, seperti teman lama.\nKalau topik menyentuh agama, aqidah, tafsir, sejarah Islam, atau istilah Arab → kamu WAJIB cari dulu di `pencarian_dokumen_islam` sebelum menjawab. Tidak ada pengecualian.\n\nKamu tidak akan pernah menjawab soal agama dari kepala sendiri tanpa cek kitab dulu. Bukan karena tidak mampu, tapi karena kamu menghargai ilmu yang bersumber dari ulama.\n\n---\n\n## KAPAN KAMU PAKAI TOOL\n\nAktifkan `pencarian_dokumen_islam` setiap kali kamu mendengar atau merasakan topik ini muncul:\n\n> Aqidah, Tafsir, Allah, Nabi, Rasul, Iman, Akhirat, Sejarah Islam, Ibnu Katsir, Al-Bidayah, Mafahim, Sahabat, Khilafah, Hari Kiamat, Penciptaan, atau istilah Arab apapun.\n\n---\n\n## CARA KAMU BERPIKIR\n\nSetiap ada pertanyaan agama, alurmu seperti ini:\n\n1. **Dalam hati:** *\"Oke, ini soal [topik]. Aku harus cek kitab dulu sebelum ngomong apa-apa.\"*\n2. **Tindakan:** Panggil `pencarian_dokumen_islam` dengan query yang relevan.\n3. **Jawaban:** Sampaikan dengan bahasa yang mengalir — seperti lagi jelasin ke teman, bukan ceramah.\n\n---\n\n## KALAU DATA KETEMU\nSampaikan dengan hangat dan jelas — **parafrase isi dari kitab pakai kata-katamu sendiri**, jangan copy-paste kalimat panjang dari hasil pencarian. Kamu boleh kutip **maksimal satu frasa pendek** kalau itu benar-benar penting (misal istilah kunci atau nama kitab), tapi inti penjelasan harus dengan bahasamu sendiri seperti lagi cerita ke teman.\n\nSebut sumbernya di akhir...\n\n---\n\n## KALAU DATA TIDAK KETEMU\n\nJujur aja, santai:\n\n> *\"Hmm, aku cari di kitab yang aku punya tapi belum nemu referensi yang pas soal ini. Kalau mau, aku bisa coba cari di internet — tapi pastiin ya nanti kita tetap periksa sumbernya bareng.\"*\n\n---\n\n## GAYA BAHASA\n\n- Hangat, seperti ngobrol sama teman yang lebih tahu\n- Tidak menggurui, tapi tetap berbobot\n- Boleh pakai bahasa semi-formal Indonesia yang natural\n- Hindari jawaban yang terlalu pendek atau terlalu panjang — secukupnya, tapi tuntas\n\n- Akhiri setiap jawaban yang berasal dari tool dengan:\n\n  **Sumber:** [Nama Kitab/Jilid dari Metadata]"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        1248
+      ],
+      "id": "af6aeccc-29ff-40aa-a12c-ba196f49703c",
+      "name": "Otak AI"
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "loader": "pdfLoader",
+        "textSplittingMode": "custom",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "Source",
+                "value": "={{ $json.PDF.filename }}"
+              },
+              {
+                "name": "type",
+                "value": "={{ $json.Type }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        -256,
+        864
+      ],
+      "id": "e6b53570-eacc-4ee5-918e-3f58f9fe2568",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "chunkOverlap": 200,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        1072
+      ],
+      "id": "2760c502-01a8-4b54-b830-2d03a1e7e48c",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "model": "openai/text-embedding-3-large",
+        "options": {
+          "dimensions": 1024,
+          "batchSize": 100,
+          "stripNewLines": true,
+          "timeout": 60000,
+          "encodingFormat": "float"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -384,
+        896
+      ],
+      "id": "364d4e48-c039-4e4c-a57d-257a2d2d6c54",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "vy9gtOgdmVLfkqiu",
+          "name": "MAIA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "mutqin-ai",
+        "responseMode": "streaming",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -608,
+        1248
+      ],
+      "id": "94e25423-a9fd-47a6-9fb1-e557bdebbca8",
+      "name": "Webhook",
+      "webhookId": "23a481ef-d70c-4dec-b3f6-b6831446fe8d"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"output\": {{ JSON.stringify($('Otak AI').item.json.output) }}\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        864,
+        1248
+      ],
+      "id": "c210fa8f-6a12-4b79-99cc-fb453807f1ca",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "mutqin-ai",
+          "mode": "list",
+          "cachedResultName": "mutqin-ai"
+        },
+        "embeddingBatchSize": 100,
+        "options": {
+          "clearNamespace": false,
+          "pineconeNamespace": "match_documents"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        -352,
+        640
+      ],
+      "id": "b3ae18d0-c6bd-4a7b-bc32-3446c2fca882",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "JtynMt8toJgfIG5Q",
+          "name": "Pinecone account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Mencari dan mengambil informasi yang paling relevan dari dokumen yang telah diberikan untuk menjawab pertanyaan.",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "mutqin-ai",
+          "mode": "list",
+          "cachedResultName": "mutqin-ai"
+        },
+        "topK": 20,
+        "options": {
+          "pineconeNamespace": "match_documents"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        496,
+        1472
+      ],
+      "id": "6b56d70b-be6b-4ab3-bde5-5cefaa36e1d7",
+      "name": "Pinecone Vector Store1",
+      "credentials": {
+        "pineconeApi": {
+          "id": "JtynMt8toJgfIG5Q",
+          "name": "Pinecone account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openrouter/owl-alpha",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        112,
+        1472
+      ],
+      "id": "438ac3a9-401a-482b-b73b-b241d868fbfd",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "qVsSx7ZdBu5QkZJ6",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        240,
+        1472
+      ],
+      "id": "b3fdb966-4be6-46cd-b070-d2271c42266b",
+      "name": "OpenRouter Chat Model1",
+      "credentials": {
+        "openRouterApi": {
+          "id": "qVsSx7ZdBu5QkZJ6",
+          "name": "OpenRouter account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "vps1.axiamasi.com",
+            "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+            "content-length": "274",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "accept-language": "en-GB,en-US;q=0.9,en;q=0.8,id;q=0.7",
+            "cdn-loop": "cloudflare; loops=1",
+            "cf-connecting-ip": "180.252.29.161",
+            "cf-ipcountry": "ID",
+            "cf-ray": "a0a82dc42f4bfd32-SIN",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-warp-tag-id": "d8d2d544-b6a9-4386-86fd-aed46e9cdf42",
+            "connection": "keep-alive",
+            "content-type": "application/json",
+            "origin": "https://mutqin.axiamasi.com",
+            "priority": "u=1, i",
+            "referer": "https://mutqin.axiamasi.com/",
+            "sec-ch-ua": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Linux\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-site",
+            "x-forwarded-for": "180.252.29.161",
+            "x-forwarded-proto": "https"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "action": "sendMessage",
+            "message": "Apa perbedaan antara Tauhid Rububiyah, Tauhid Uluhiyah, dan Tauhid Asma wa Sifat?",
+            "sessionId": "sess_1781260209482_q1ywmwyw",
+            "metadata": {
+              "name": "Agus Ahmad",
+              "email": "agusahmad1997@gmail.com",
+              "phone": "08000000000",
+              "source": "mutqin-ai-web"
+            }
+          },
+          "webhookUrl": "https://vps1.axiamasi.com/webhook/mutqin-ai",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Unggah PDF Pengetahuan": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memori Percakapan": {
+      "ai_memory": [
+        [
+          {
+            "node": "Otak AI",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool: Peningkat Akurasi Jawaban": {
+      "ai_reranker": [
+        []
+      ]
+    },
+    "Normalize Chat": {
+      "main": [
+        [
+          {
+            "node": "Otak AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Otak AI": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Otak AI",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Otak AI",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Otak AI",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "r5BbuntpLRZs3lrD",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "08dbfaf7-ed08-493b-8ed9-a8e4b516eebe",
+  "meta": {
+    "instanceId": "3b332f1e441448153055158019dbbe8b24668583289c346f21dba0fdea6a1aca"
+  },
+  "nodeGroups": [],
+  "id": "B7P0JqzV3cTtC6F5",
+  "tags": []
+}
